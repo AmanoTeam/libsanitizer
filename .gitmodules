@@ -1,0 +1,3 @@
+[submodule "submodules/pino"]
+	path = submodules/pino
+	url = https://github.com/AmanoTeam/Pino
