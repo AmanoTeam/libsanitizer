@@ -1,0 +1,99 @@
+name: Build
+
+on:
+  push:
+    branches:
+        - '**'
+
+jobs:
+  cross-build:
+    name: 'Cross build'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        target: [
+          # Android
+          'x86_64-unknown-linux-android',
+          'i686-unknown-linux-android21',
+          'aarch64-unknown-linux-android',
+          'riscv64-unknown-linux-android',
+          'armv7-unknown-linux-androideabi21',
+          'mips64el-unknown-linux-android',
+          'mipsel-unknown-linux-android21',
+          
+          # Linux (glibc)
+          'x86_64-unknown-linux-gnu2.7',
+          'aarch64-unknown-linux-gnu2.19',
+          'arm-unknown-linux-gnueabi2.13',
+          'arm-unknown-linux-gnueabihf2.13',
+          'i386-unknown-linux-gnu2.7'
+        ]
+    steps:
+    - uses: actions/checkout@main
+      with:
+        submodules: true
+    - name: Cross-compile AddressSanitizer to ${{ matrix.target }}
+      run: |
+        # Linux (glibc)
+        declare -r OBGGCC_TAG="$(jq --raw-output '.tag_name' <<< "$(curl --connect-timeout '10' --retry '15' --retry-all-errors --fail --silent --url 'https://api.github.com/repos/AmanoTeam/obggcc/releases/latest')")"
+        declare -r OBGGCC_TARBALL='/tmp/toolchain.tar.xz'
+        declare -r OBGGCC_URL="https://github.com/AmanoTeam/obggcc/releases/download/${OBGGCC_TAG}/x86_64-unknown-linux-gnu.tar.xz"
+        
+        curl --connect-timeout '10' --retry '15' --retry-all-errors --fail --silent --location --url "${OBGGCC_URL}" --output "${OBGGCC_TARBALL}"
+        tar --directory="$(dirname "${OBGGCC_TARBALL}")" --extract --file="${OBGGCC_TARBALL}"
+        
+        export OBGGCC_HOME='/tmp/obggcc'
+        export PATH="${OBGGCC_HOME}/bin:${PATH}"
+        
+        # Android
+        declare -r PINO_TAG="$(jq --raw-output '.tag_name' <<< "$(curl --connect-timeout '10' --retry '15' --retry-all-errors --fail --silent --url 'https://api.github.com/repos/AmanoTeam/Pino/releases/latest')")"
+        declare -r PINO_TARBALL='/tmp/toolchain.tar.xz'
+        declare -r PINO_URL="https://github.com/AmanoTeam/Pino/releases/download/${PINO_TAG}/x86_64-unknown-linux-gnu.tar.xz"
+        
+        curl --connect-timeout '10' --retry '15' --retry-all-errors --fail --silent --location --url "${PINO_URL}" --output "${PINO_TARBALL}"
+        tar --directory="$(dirname "${PINO_TARBALL}")" --extract --file="${PINO_TARBALL}"
+        
+        export PINO_HOME='/tmp/pino'
+        export PATH="${PINO_HOME}/bin:${PATH}"
+        
+        ln --symbolic --force '/tmp/'*'/usr/local/share/'*'/'*'/'* '/tmp'
+        
+        source '/tmp/${{ matrix.target }}.sh'
+        
+        echo "CROSS_COMPILE_TRIPLET=${CROSS_COMPILE_TRIPLET}" >> "${GITHUB_ENV}"
+        
+        bash './build.sh' "${CROSS_COMPILE_TRIPLET}"
+    - name: Generate tarball
+      run: |
+        declare tarball_filename='/tmp/${{ env.CROSS_COMPILE_TRIPLET }}.tar.xz'
+        tar --directory='/tmp' --create --file=- 'libsanitizer' | xz --threads='0' --compress -9 > "${tarball_filename}"
+        sha256sum "${tarball_filename}" | sed 's|/tmp/||' > "${tarball_filename}.sha256"
+    - name: Upload artifact
+      uses: actions/upload-artifact@main
+      with:
+        name: ${{ env.CROSS_COMPILE_TRIPLET }}
+        if-no-files-found: error
+        path: |
+          /tmp/${{ env.CROSS_COMPILE_TRIPLET }}.tar.xz
+          /tmp/${{ env.CROSS_COMPILE_TRIPLET }}.tar.xz.sha256
+   
+  release:
+    needs: cross-build
+    runs-on: ubuntu-latest
+    name: Collect all artifacts
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@main
+      - name: Create release
+        uses: softprops/action-gh-release@master
+        with:
+          tag_name: gcc-16
+          name: libsanitizer (GCC 16)
+          files: ./*/*-unknown-*.tar.xz*
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          body: "* libsanitizer"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
