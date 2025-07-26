@@ -6,6 +6,8 @@ declare -r install_prefix='/tmp/libsanitizer'
 
 declare -r workdir="${PWD}"
 
+declare -r libtool_file="${workdir}/libstdc++.la"
+
 declare -r gcc_tarball='/tmp/gcc.tar.gz'
 declare -r gcc_directory='/tmp/gcc-master'
 
@@ -41,6 +43,7 @@ if ! [ -f "${gcc_tarball}" ]; then
 		--file="${gcc_tarball}"
 	
 	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/patches/0001-Fix-libsanitizer-build.patch"
+	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/submodules/pino/patches/0001-Disable-SONAME-versioning-for-all-target-libraries.patch"
 fi
 
 [ -d "${libsanitizer_directory}/build" ] || mkdir "${libsanitizer_directory}/build"
@@ -49,8 +52,12 @@ cd "${libsanitizer_directory}/build"
 
 mkdir --parent "${libsanitizer_directory}/libstdc++-v3/src"
 
-declare file="$(${CROSS_COMPILE_TRIPLET}-g++ --print-file-name='libstdc++.la')"
-cp "${file}" "${libsanitizer_directory}/libstdc++-v3/src"
+declare file="$(${CROSS_COMPILE_TRIPLET}-g++ --print-file-name='libstdc++.so')"
+declare -r library_directory="$(dirname "${file}")"
+
+cp "${libtool_file}" "${libsanitizer_directory}/libstdc++-v3/src"
+
+echo "libdir='${library_directory}'" >> "${libsanitizer_directory}/libstdc++-v3/src/libstdc++.la"
 
 ../configure \
 	--disable-multilib \
