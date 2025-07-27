@@ -46,6 +46,13 @@ if ! [ -f "${gcc_tarball}" ]; then
 	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/submodules/pino/patches/0001-Disable-SONAME-versioning-for-all-target-libraries.patch"
 fi
 
+# Follow Debian's approach for removing hardcoded RPATH from binaries
+# https://wiki.debian.org/RpathIssue
+sed \
+	--in-place \
+	--regexp-extended \
+	"${gcc_directory}/libsanitizer/configure"
+
 [ -d "${libsanitizer_directory}/build" ] || mkdir "${libsanitizer_directory}/build"
 
 cd "${libsanitizer_directory}/build"
