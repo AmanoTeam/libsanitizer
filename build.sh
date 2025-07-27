@@ -51,6 +51,7 @@ fi
 sed \
 	--in-place \
 	--regexp-extended \
+	's/(hardcode_into_libs)=.*$/\1=no/' \
 	"${gcc_directory}/libsanitizer/configure"
 
 [ -d "${libsanitizer_directory}/build" ] || mkdir "${libsanitizer_directory}/build"
