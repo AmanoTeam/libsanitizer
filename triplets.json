@@ -15,6 +15,5 @@
 	"i686-unknown-linux-android",
 	"aarch64-unknown-linux-android",
 	"riscv64-unknown-linux-android",
-	"armv7-unknown-linux-androideabi",
-	"mips64el-unknown-linux-android"
+	"armv7-unknown-linux-androideabi"
 ]

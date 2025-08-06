@@ -9,7 +9,7 @@ declare -r workdir="${PWD}"
 declare -r libtool_file="${workdir}/libstdc++.la"
 
 declare -r gcc_tarball='/tmp/gcc.tar.gz'
-declare -r gcc_directory='/tmp/gcc-master'
+declare -r gcc_directory='/tmp/gcc-releases-gcc-15'
 
 declare -r libsanitizer_directory="${gcc_directory}/libsanitizer"
 
@@ -28,7 +28,7 @@ declare -ra asan_libraries=(
 
 if ! [ -f "${gcc_tarball}" ]; then
 	curl \
-		--url 'https://github.com/gcc-mirror/gcc/archive/refs/heads/master.tar.gz' \
+		--url 'https://github.com/gcc-mirror/gcc/archive/refs/heads/releases/gcc-15.tar.gz' \
 		--retry '30' \
 		--retry-all-errors \
 		--retry-delay '0' \
@@ -44,6 +44,7 @@ if ! [ -f "${gcc_tarball}" ]; then
 	
 	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/patches/0001-Fix-libsanitizer-build.patch"
 	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/submodules/pino/patches/0001-Disable-SONAME-versioning-for-all-target-libraries.patch"
+	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/submodules/pino/patches/0001-Avoid-relying-on-dynamic-shadow-when-building-libsan.patch"
 fi
 
 # Follow Debian's approach for removing hardcoded RPATH from binaries
@@ -73,7 +74,7 @@ echo "libdir='${library_directory}'" >> "${libsanitizer_directory}/libstdc++-v3/
 	--host="${CROSS_COMPILE_TRIPLET}" \
 	--prefix="${install_prefix}" \
 	CFLAGS="${optflags}" \
-	CXXFLAGS="${optflags}" \
+	CXXFLAGS="${optflags} -D_ABIN32=2" \
 	LDFLAGS="${linkflags}"
 
 make --jobs="${max_jobs}"
