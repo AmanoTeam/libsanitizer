@@ -20,7 +20,7 @@ jobs:
           'riscv64-unknown-linux-android',
           # 'armv5-unknown-linux-androideabi',
           'armv7-unknown-linux-androideabi',
-          # 'mips64el-unknown-linux-android',
+          'mips64el-unknown-linux-android',
           'mipsel-unknown-linux-android',
           
           # Linux (glibc)
