@@ -43,9 +43,9 @@ if ! [ -f "${gcc_tarball}" ]; then
 		--file="${gcc_tarball}"
 	
 	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/patches/0001-Fix-libsanitizer-build.patch"
+	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/patches/0001-Skip-FILE64_FLAGS-for-Android-MIPS-targets.patch"
 	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/submodules/pino/patches/0001-Disable-SONAME-versioning-for-all-target-libraries.patch"
 	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/submodules/pino/patches/0001-Avoid-relying-on-dynamic-shadow-when-building-libsan.patch"
-	patch --directory="${gcc_directory}" --strip='1' --input="${workdir}/submodules/pino/patches/0001-Skip-FILE64_FLAGS-for-Android-MIPS-targets.patch"
 fi
 
 # Follow Debian's approach for removing hardcoded RPATH from binaries
