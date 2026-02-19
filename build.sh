@@ -10,8 +10,9 @@ declare -r workdir="${PWD}"
 
 declare -r libtool_file="${workdir}/libstdc++.la"
 
+declare gcc_url='https://github.com/gcc-mirror/gcc/archive/master.tar.gz'
 declare -r gcc_tarball='/tmp/gcc.tar.gz'
-declare -r gcc_directory="/tmp/gcc-releases-gcc-${gcc_major}"
+declare gcc_directory='/tmp/gcc-master'
 
 declare -r libsanitizer_directory="${gcc_directory}/libsanitizer"
 
@@ -28,9 +29,14 @@ declare -ra asan_libraries=(
 	'libubsan'
 )
 
+if [ "${gcc_major}" != '16' ]; then
+	gcc_url='https://github.com/gcc-mirror/gcc/archive/releases/gcc-15.tar.gz'
+	gcc_directory="/tmp/gcc-releases-gcc-${gcc_major}"
+fi
+
 if ! [ -f "${gcc_tarball}" ]; then
 	curl \
-		--url "https://github.com/gcc-mirror/gcc/archive/refs/heads/releases/gcc-${gcc_major}.tar.gz" \
+		--url "${gcc_url}" \
 		--retry '30' \
 		--retry-all-errors \
 		--retry-delay '0' \
