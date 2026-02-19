@@ -88,12 +88,12 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: 0.1
-          name: libsanitizer
+          tag_name: gcc-15
+          name: libsanitizer (GCC 15)
           files: ./*/*-unknown-*.tar.xz*
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
-          body: "* Initial release"
+          body: "* libsanitizer"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

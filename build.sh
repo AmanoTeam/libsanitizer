@@ -13,8 +13,8 @@ declare -r gcc_directory='/tmp/gcc-releases-gcc-15'
 
 declare -r libsanitizer_directory="${gcc_directory}/libsanitizer"
 
-declare -r optflags='-w -O2 -g'
-declare -r linkflags='-s'
+declare -r optflags='-O2'
+declare -r linkflags='-Xlinker -s'
 
 declare -r max_jobs='40'
 
