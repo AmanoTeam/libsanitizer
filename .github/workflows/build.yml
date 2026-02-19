@@ -88,8 +88,8 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: gcc-15
-          name: libsanitizer (GCC 15)
+          tag_name: gcc-16
+          name: libsanitizer (GCC 16)
           files: ./*/*-unknown-*.tar.xz*
           draft: false
           prerelease: false

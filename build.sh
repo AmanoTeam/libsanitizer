@@ -2,6 +2,8 @@
 
 set -eu
 
+declare -r gcc_major='16'
+
 declare -r install_prefix='/tmp/libsanitizer'
 
 declare -r workdir="${PWD}"
@@ -9,7 +11,7 @@ declare -r workdir="${PWD}"
 declare -r libtool_file="${workdir}/libstdc++.la"
 
 declare -r gcc_tarball='/tmp/gcc.tar.gz'
-declare -r gcc_directory='/tmp/gcc-releases-gcc-15'
+declare -r gcc_directory="/tmp/gcc-releases-gcc-${gcc_major}"
 
 declare -r libsanitizer_directory="${gcc_directory}/libsanitizer"
 
@@ -28,7 +30,7 @@ declare -ra asan_libraries=(
 
 if ! [ -f "${gcc_tarball}" ]; then
 	curl \
-		--url 'https://github.com/gcc-mirror/gcc/archive/refs/heads/releases/gcc-15.tar.gz' \
+		--url "https://github.com/gcc-mirror/gcc/archive/refs/heads/releases/gcc-${gcc_major}.tar.gz" \
 		--retry '30' \
 		--retry-all-errors \
 		--retry-delay '0' \
